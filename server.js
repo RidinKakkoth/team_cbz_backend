@@ -14,7 +14,22 @@ const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 
-app.use(cors());
+// CORS: allow all in dev, restrict in prod via ALLOWED_ORIGINS (comma-separated list)
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: allowedOrigins.length
+      ? (origin, cb) => {
+          if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+          return cb(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      : true,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(morgan('dev'));
 
